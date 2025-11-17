@@ -1,7 +1,18 @@
 import './App.css'
+import { VehiculoPage } from "./pages/VehiculoPage";
+import { RegistroPage } from "./pages/RegistroPage";
+import { Routes, Route } from "react-router-dom"
+
+
 
 export const Registro = () => {
   return (
-    <h1 className='text-3xl font-bold underline'>Hola Mundo!</h1>
+    <>
+    <Routes>
+        <Route path="/vehiculos" element={<VehiculoPage />} />
+        <Route path="/registro" element={<RegistroPage />} />
+      </Routes>
+    
+    </>
   )
 }
