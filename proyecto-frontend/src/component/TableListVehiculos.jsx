@@ -1,8 +1,63 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useMemo } from 'react';
 import { VehiculoContext } from '../context/VehiculoContext';
 
+// Funciones auxiliares (necesarias para evitar Invalid Date y actualizar el status)
+const formatDate = (dateString) => {
+    if (!dateString || isNaN(new Date(dateString))) {
+        return '---';
+    }
+    return new Date(dateString).toLocaleDateString();
+};
+
 export const TableListVehiculos = ({ handleOpen }) => {
-    const { vehiculos, loading, error } = useContext(VehiculoContext);
+
+    const {
+        vehiculos,
+        loading,
+        error,
+        toggleVehiculoStatus
+    } = useContext(VehiculoContext);
+
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
+
+    const listaCompleta = vehiculos;
+
+    const totalPages = Math.ceil(listaCompleta.length / itemsPerPage);
+
+
+    const currentTableData = useMemo(() => {
+        const sorted = [...listaCompleta].sort((a, b) => {
+            // Primero los inhabilitados (status false)
+            if (a.status === b.status) {
+                return a.id - b.id;
+            }
+            return a.status ? 1 : -1;
+        });
+
+        const firstItemIndex = (currentPage - 1) * itemsPerPage;
+        const lastItemIndex = firstItemIndex + itemsPerPage;
+
+        return sorted.slice(firstItemIndex, lastItemIndex);
+    }, [listaCompleta, currentPage, itemsPerPage]);
+
+
+
+
+    const goToNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const goToPrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
 
     if (loading) {
         return <div className="text-center p-8">Cargando vehículos... 🚗💨</div>;
@@ -18,9 +73,9 @@ export const TableListVehiculos = ({ handleOpen }) => {
 
     return (
         <>
-            
+
             <div className='flex justify-center mt-5 mb-4'>
-                <button 
+                <button
                     className='btn btn-warning'
                     onClick={() => handleOpen("add")}
                 >
@@ -31,39 +86,58 @@ export const TableListVehiculos = ({ handleOpen }) => {
             <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
                 <table className="table w-full">
                     <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Marca</th>
-                            <th>Modelo</th>
-                            <th>Placa</th>
-                            <th>Creado en</th>
-                            <th>Actualizado en</th>
-                            <th>Status</th>
-                            <th>Acciones</th>
-                        </tr>
+                        {/* ... Headers ... */}
                     </thead>
                     <tbody>
-                        {vehiculos.map((vehiculo) => (
+                        {currentTableData.map((vehiculo) => (
                             <VehiculoRow
                                 key={vehiculo.id}
                                 vehiculo={vehiculo}
                                 handleOpen={handleOpen}
+                                toggleVehiculoStatus={toggleVehiculoStatus}
                             />
                         ))}
                     </tbody>
                 </table>
             </div>
+
+
+            {totalPages > 1 && (
+                <div className="flex justify-center mt-6">
+                    <div className="join">
+                        <button
+                            className="join-item btn"
+                            onClick={goToPrevPage}
+                            disabled={currentPage === 1}
+                        >
+                            « Anterior
+                        </button>
+                        <button className="join-item btn">
+                            Página {currentPage} de {totalPages}
+                        </button>
+                        <button
+                            className="join-item btn"
+                            onClick={goToNextPage}
+                            disabled={currentPage === totalPages}
+                        >
+                            Siguiente »
+                        </button>
+                    </div>
+                </div>
+            )}
+            {/* Fin Controles de Paginación */}
         </>
     );
 };
 
 
-// 🔥 Componente separado para evitar hooks dentro del map()
-const VehiculoRow = ({ vehiculo, handleOpen }) => {
-    const [status, setStatus] = useState(Boolean(vehiculo.status));
+
+const VehiculoRow = ({ vehiculo, handleOpen, toggleVehiculoStatus }) => {
 
 
-    const toggleStatus = () => setStatus(!status);
+    const handleToggleStatus = () => {
+        toggleVehiculoStatus(vehiculo.id, !vehiculo.status);
+    };
 
     return (
         <tr>
@@ -71,16 +145,18 @@ const VehiculoRow = ({ vehiculo, handleOpen }) => {
             <td>{vehiculo.marca}</td>
             <td>{vehiculo.modelo}</td>
             <td>{vehiculo.placa}</td>
-            <td>{new Date(vehiculo.created_at).toLocaleDateString()}</td>
-            <td>{new Date(vehiculo.updated_at).toLocaleDateString()}</td>
+            <td>{formatDate(vehiculo.created_at)}</td>
+            <td>{formatDate(vehiculo.updated_at)}</td>
 
             <td>
-                <button
-                    className={`btn btn-sm ${status ? "btn-success" : "btn-warning"}`}
-                    onClick={toggleStatus}
+                <span
+                    className={`px-2 py-1 rounded-full text-white text-sm cursor-pointer ${vehiculo.status ? "bg-green-500" : "bg-yellow-500"
+                        }`}
+                    onClick={() => handleToggleStatus(vehiculo.id, !vehiculo.status)}
+                    title="Click para cambiar estado"
                 >
-                    {status ? "Habilitado" : "Inhabilitado"}
-                </button>
+                    {vehiculo.status ? "Habilitado" : "Inhabilitado"}
+                </span>
             </td>
 
             <td>

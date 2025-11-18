@@ -7,9 +7,8 @@ export const VehiculoProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ========================
-  //    GET VEHÍCULOS
-  // ========================
+  // GET VEHICULOS
+
   const fetchVehiculos = async () => {
     try {
       setLoading(true);
@@ -27,9 +26,8 @@ export const VehiculoProvider = ({ children }) => {
     fetchVehiculos();
   }, []);
 
-  // ========================
-  //       POST VEHÍCULO
-  // ========================
+  // POST VEHICULOS
+
   const addVehiculo = async (nuevoVehiculo) => {
     try {
       await axios.post(
@@ -37,7 +35,6 @@ export const VehiculoProvider = ({ children }) => {
         nuevoVehiculo
       );
 
-      // Agrega el nuevo vehículo a la lista sin recargar
       fetchVehiculos();
 
     } catch (error) {
@@ -46,13 +43,31 @@ export const VehiculoProvider = ({ children }) => {
     }
   };
 
+  // PUT VEHICULO MODALFORM
+
+  const updateVehiculo = async (id, datosActualizados) => {
+    try {
+      await axios.put(`https://registrovehiculo.onrender.com/api/vehiculos/${id}`, datosActualizados);
+
+      setVehiculos(prev =>
+        prev.map(v => (v.id === id ? { ...v, ...datosActualizados } : v))
+      );
+
+    } catch (error) {
+      console.error("Error al actualizar vehículo:", error);
+      throw error;
+    }
+  };
+
   return (
-    <VehiculoContext.Provider 
-      value={{ 
-        vehiculos, 
-        loading, 
+    <VehiculoContext.Provider
+      value={{
+        vehiculos,
+        loading,
         error,
-        addVehiculo   // 🔥 <-- lo exponemos aquí
+        addVehiculo,
+        updateVehiculo,
+
       }}
     >
       {children}
