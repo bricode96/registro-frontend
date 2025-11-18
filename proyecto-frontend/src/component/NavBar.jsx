@@ -15,25 +15,24 @@ export const NavBar = () => {
                     <ul
                         tabIndex="-1"
                         className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-
                         <li><Link to="/vehiculos">Vehiculo</Link></li>
                         <li><Link to="/registro">Registro</Link></li>
                     </ul>
                 </div>
 
-                    <h1 className="text-3xl font-bold">Control de flota</h1>
+                <h1 className="text-3xl font-bold">Control de flota</h1>
             </div>
 
             {/* Desktop Menu */}
-            <div className="navbar-center hidden lg:flex">
+            <div className="navbar-end hidden lg:flex">
                 <ul className="menu menu-horizontal px-1">
-                    <li>
+                    <li className='flex justify-center mt-5'>
                         <Link to="/vehiculos">
                             <button className="btn btn-accent">Vehiculo</button>
                         </Link>
                     </li>
 
-                    <li>
+                    <li className='flex justify-center mt-5'>
                         <Link to="/registro">
                             <button className="btn btn-secondary ml-4">Registro</button>
                         </Link>
@@ -41,17 +40,6 @@ export const NavBar = () => {
                 </ul>
             </div>
 
-            {/* Search and Add */}
-            <div className="navbar-end flex gap-2">
-
-                <input
-                    type="text"
-                    placeholder="Buscar..."
-                    className="input input-bordered input-sm w-full max-w-xs"
-                />
-
-                <a className="btn btn-primary">Add Client</a>
-            </div>
         </div>
     )
 }
