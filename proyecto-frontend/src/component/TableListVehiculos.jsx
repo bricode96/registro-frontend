@@ -120,7 +120,7 @@ const VehiculoRow = ({ vehiculo, handleOpen, toggleVehiculoStatus, deleteVehicul
             try { await deleteVehiculo(vehiculo.id); }
             catch (error) { console.error("Error eliminando vehiculo:", error) }
     };
-
+//Hello
     return (
         <tr>
             <th>{vehiculo.id}</th>
