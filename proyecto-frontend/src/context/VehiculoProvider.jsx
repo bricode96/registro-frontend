@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { VehiculoContext } from "./VehiculoContext";
 import axios from "axios";
 
@@ -9,7 +9,7 @@ export const VehiculoProvider = ({ children }) => {
 
   // GET VEHICULOS
 
-  const fetchVehiculos = async () => {
+  const fetchVehiculos = useCallback( async () => {
     try {
       setLoading(true);
       const response = await axios.get("https://registrovehiculo.onrender.com/api/vehiculos");
@@ -20,15 +20,15 @@ export const VehiculoProvider = ({ children }) => {
       setError(err.message);
       setLoading(false);
     }
-  };
+  }, [])
 
   useEffect(() => {
     fetchVehiculos();
-  }, []);
+  }, [fetchVehiculos]);
 
   // POST VEHICULOS
 
-  const addVehiculo = async (nuevoVehiculo) => {
+  const addVehiculo = useCallback( async (nuevoVehiculo) => {
     try {
       await axios.post(
         "https://registrovehiculo.onrender.com/api/vehiculos",
@@ -41,11 +41,11 @@ export const VehiculoProvider = ({ children }) => {
       console.error("Error al agregar vehículo:", error);
       throw error;
     }
-  };
+  }, [fetchVehiculos])
 
   // PUT VEHICULO MODALFORM
 
-  const updateVehiculo = async (id, datosActualizados) => {
+  const updateVehiculo = useCallback( async (id, datosActualizados) => {
     try {
       await axios.put(`https://registrovehiculo.onrender.com/api/vehiculos/${id}`, datosActualizados);
 
@@ -57,8 +57,23 @@ export const VehiculoProvider = ({ children }) => {
       console.error("Error al actualizar vehículo:", error);
       throw error;
     }
-  };
+  }, [])
 
+  // DELETE VEHICULO
+
+  const deleteVehiculo = useCallback(async (id)=>{
+    try{
+        await axios.delete(`https://registrovehiculo.onrender.com/api/vehiculos/${id}`);
+
+        setVehiculos(prev =>
+          prev.filter(v => v.id !== id)
+        );
+    }catch(error){
+      console.error("Error al eliminar vehículo:", error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || "Fallo al eliminar el vehículo en el servidor.");
+    }
+  }, [])
+  
   return (
     <VehiculoContext.Provider
       value={{
@@ -67,7 +82,7 @@ export const VehiculoProvider = ({ children }) => {
         error,
         addVehiculo,
         updateVehiculo,
-
+        deleteVehiculo
       }}
     >
       {children}

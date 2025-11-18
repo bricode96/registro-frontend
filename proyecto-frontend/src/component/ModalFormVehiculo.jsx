@@ -2,7 +2,6 @@ import { useEffect, useState, useContext } from "react";
 import { VehiculoContext } from "../context/VehiculoContext";
 
 export const ModalFormVehiculo = ({ isOpen, onClose, mode, vehiculoData }) => {
-
     const { addVehiculo, updateVehiculo } = useContext(VehiculoContext);
 
     const [marca, setMarca] = useState("");
@@ -17,11 +16,26 @@ export const ModalFormVehiculo = ({ isOpen, onClose, mode, vehiculoData }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Validaciones
+        if (!marca.trim()) {
+            alert("La marca es obligatoria");
+            return;
+        }
+        if (!modelo.trim()) {
+            alert("El modelo es obligatorio");
+            return;
+        }
+        const placaRegex = /^[A-Z]{3}[0-9]{4}$/i;
+        if (!placaRegex.test(placa.trim())) {
+            alert("Placa inválida. Debe tener 3 letras y 4 números, ejemplo: ABC1234");
+            return;
+        }
+
         try {
             const datosVehiculo = {
                 marca,
                 modelo,
-                placa,
+                placa: placa.toUpperCase(),
                 status,
             };
 
@@ -32,7 +46,6 @@ export const ModalFormVehiculo = ({ isOpen, onClose, mode, vehiculoData }) => {
             }
 
             onClose();
-
         } catch (error) {
             console.error("Error al guardar vehículo", error);
         }
@@ -93,7 +106,6 @@ export const ModalFormVehiculo = ({ isOpen, onClose, mode, vehiculoData }) => {
                         />
                     </label>
 
-
                     <button
                         type="button"
                         className={`btn ${status ? "btn-success" : "btn-warning"}`}
@@ -102,13 +114,12 @@ export const ModalFormVehiculo = ({ isOpen, onClose, mode, vehiculoData }) => {
                         {status ? "Habilitado" : "Inhabilitado"}
                     </button>
 
-
                     <button
                         type="button"
                         className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                         onClick={onClose}
                     >
-
+                        ✕
                     </button>
 
                     <button type="submit" className="btn btn-primary">
