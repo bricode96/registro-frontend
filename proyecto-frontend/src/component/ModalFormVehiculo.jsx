@@ -13,44 +13,52 @@ export const ModalFormVehiculo = ({ isOpen, onClose, mode, vehiculoData }) => {
         setStatus((prev) => !prev);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+   const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        // Validaciones
-        if (!marca.trim()) {
-            alert("La marca es obligatoria");
-            return;
-        }
-        if (!modelo.trim()) {
-            alert("El modelo es obligatorio");
-            return;
-        }
-        const placaRegex = /^[A-Z]{3}[0-9]{4}$/i;
-        if (!placaRegex.test(placa.trim())) {
-            alert("Placa inválida. Debe tener 3 letras y 4 números, ejemplo: ABC1234");
-            return;
-        }
+    // Validaciones
+    if (!marca.trim()) {
+        alert("La marca es obligatoria");
+        return;
+    }
+    if (!modelo.trim()) {
+        alert("El modelo es obligatorio");
+        return;
+    }
+    const placaRegex = /^[A-Z]{3}[0-9]{4}$/i;
+    if (!placaRegex.test(placa.trim())) {
+        alert("Placa inválida. Debe tener 3 letras y 4 números, ejemplo: ABC1234");
+        return;
+    }
 
-        try {
-            const datosVehiculo = {
-                marca,
-                modelo,
-                placa: placa.toUpperCase(),
-                status,
-            };
+    try {
+        const datosVehiculo = {
+            marca,
+            modelo,
+            placa: placa.toUpperCase(),
+            status,
+        };
 
-            if (mode === "add") {
-                await addVehiculo(datosVehiculo);
-            } else if (mode === "edit" && vehiculoData) {
-                await updateVehiculo(vehiculoData.id, datosVehiculo);
+        if (mode === "add") {
+            await addVehiculo(datosVehiculo);
+        } else if (mode === "edit" && vehiculoData) {
+            
+            const isConfirmed = window.confirm("¿Estás seguro de que deseas guardar estos cambios en el vehículo?");
+
+            if (!isConfirmed) {
+                
+                return; 
             }
-
-            onClose();
-        } catch (error) {
-            console.error("Error al guardar vehículo", error);
+           
+            await updateVehiculo(vehiculoData.id, datosVehiculo);
         }
-    };
 
+        onClose();
+    } catch (error) {
+        console.error("Error al guardar vehículo", error);
+        
+    }
+};
     useEffect(() => {
         if (mode === "edit" && vehiculoData) {
             setMarca(vehiculoData.marca || "");

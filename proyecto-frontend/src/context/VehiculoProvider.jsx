@@ -13,7 +13,10 @@ export const VehiculoProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await axios.get("https://registrovehiculo.onrender.com/api/vehiculos");
-      setVehiculos(response.data);
+      
+      const vehiculosOrdenados = response.data.sort((a, b) => b.id - a.id);
+      
+      setVehiculos(vehiculosOrdenados);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching vehiculos:", err);
@@ -68,11 +71,13 @@ export const VehiculoProvider = ({ children }) => {
         setVehiculos(prev =>
           prev.filter(v => v.id !== id)
         );
+
+        fetchVehiculos();
     }catch(error){
       console.error("Error al eliminar vehículo:", error.response?.data || error.message);
       throw new Error(error.response?.data?.message || "Fallo al eliminar el vehículo en el servidor.");
     }
-  }, [])
+  }, [fetchVehiculos])
   
   return (
     <VehiculoContext.Provider

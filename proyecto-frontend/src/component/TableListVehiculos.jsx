@@ -1,4 +1,4 @@
-import { useContext, useState, useMemo } from 'react';
+import { useContext, useState, useMemo, useEffect } from 'react';
 import { VehiculoContext } from '../context/VehiculoContext';
 
 // Funciones auxiliares
@@ -13,7 +13,7 @@ export const TableListVehiculos = ({ handleOpen }) => {
     const { vehiculos, loading, error, toggleVehiculoStatus, deleteVehiculo } = useContext(VehiculoContext);
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [searchTerm, setSearchTerm] = useState(""); // <-- Nuevo estado para el search
+    const [searchTerm, setSearchTerm] = useState("");
     const itemsPerPage = 10;
 
     // Filtrado según search
@@ -27,13 +27,25 @@ export const TableListVehiculos = ({ handleOpen }) => {
 
     const totalPages = Math.ceil(filteredList.length / itemsPerPage);
 
+    // 1. AJUSTE DE PAGINACIÓN: Vuelve a la última página válida después de una eliminación.
+    useEffect(() => {
+        if (currentPage > 1 && totalPages > 0 && currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        } else if (totalPages === 0) {
+            // Si no quedan vehículos, nos aseguramos de estar en la página 1 (que mostrará el mensaje "No se encontraron vehículos").
+            setCurrentPage(1);
+        }
+    }, [totalPages, currentPage]);
+
+    // 2. ORDENAMIENTO: Ordena por status (inhabilitados primero) y luego por ID descendente.
     const currentTableData = useMemo(() => {
         const sorted = [...filteredList].sort((a, b) => {
-            // Primero los inhabilitados (status false)
+            // Prioridad: Primero los inhabilitados (status false)
             if (a.status === b.status) {
-                return a.id - b.id;
+                // Si el status es el mismo, ordena por ID DESCENDENTE
+                return b.id - a.id;
             }
-            return a.status ? 1 : -1;
+            return a.status ? 1 : -1; // Coloca los Inhabilitados (false/-1) antes de los Habilitados (true/1)
         });
 
         const firstItemIndex = (currentPage - 1) * itemsPerPage;
@@ -51,11 +63,13 @@ export const TableListVehiculos = ({ handleOpen }) => {
 
     if (loading) return <div className="text-center p-8">Cargando vehículos... 🚗💨</div>;
     if (error) return <div className="text-center p-8 text-error">Error al cargar los datos: {error}</div>;
-    if (vehiculos.length === 0) return <div className="text-center p-8">No se encontraron vehículos registrados.</div>;
+    if (vehiculos.length === 0 && !searchTerm) return <div className="text-center p-8">No se encontraron vehículos registrados.</div>;
+    if (currentTableData.length === 0 && searchTerm) return <div className="text-center p-8">No se encontraron resultados para la búsqueda.</div>;
+
 
     return (
         <>
-            <div className="flex justify-center mt-5 mb-4 items-center flex gap-x-2">
+            <div className="flex justify-center mt-5 mb-4 items-center gap-x-2">
                 <button className='btn btn-warning' onClick={() => handleOpen("add")}>
                     Añadir Vehículo
                 </button>
@@ -71,12 +85,11 @@ export const TableListVehiculos = ({ handleOpen }) => {
                 />
             </div>
 
-            <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
-                <table className="table w-full">
+            {/* 3. DISEÑO DE TABLA: Se restauran las clases de estilo. */}
+            <div className="overflow-x-auto rounded-box border ml-25 mr-25 border-base-content/5 bg-base-150">
+                <table className="table w-full flex ml-10">
                     <thead>
-                        {/* Aquí puedes poner tus headers */}
                         <tr>
-                            <th>ID</th>
                             <th>Marca</th>
                             <th>Modelo</th>
                             <th>Placa</th>
@@ -120,10 +133,9 @@ const VehiculoRow = ({ vehiculo, handleOpen, toggleVehiculoStatus, deleteVehicul
             try { await deleteVehiculo(vehiculo.id); }
             catch (error) { console.error("Error eliminando vehiculo:", error) }
     };
-//Hello
+    //Hello
     return (
         <tr>
-            <th>{vehiculo.id}</th>
             <td>{vehiculo.marca}</td>
             <td>{vehiculo.modelo}</td>
             <td>{vehiculo.placa}</td>
@@ -132,9 +144,9 @@ const VehiculoRow = ({ vehiculo, handleOpen, toggleVehiculoStatus, deleteVehicul
 
             <td>
                 <span
-                    className={`px-2 py-1 rounded-full text-white text-sm cursor-pointer ${vehiculo.status ? "bg-green-500" : "bg-yellow-500"}`}
-                    onClick={() => handleToggleStatus()}
+                    className={`px-2 py-1 rounded-full text-white text-sm mr-7 cursor-pointer ${vehiculo.status ? "bg-green-500" : "bg-yellow-500"}`}
                     title="Click para cambiar estado"
+                    onClick={() => handleToggleStatus()}
                 >
                     {vehiculo.status ? "Habilitado" : "Inhabilitado"}
                 </span>
