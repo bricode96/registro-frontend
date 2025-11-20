@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { VehiculoContext } from "../context/VehiculoContext";
 
 export const ModalFormVehiculo = ({ isOpen, onClose, mode, vehiculoData }) => {
-    const { addVehiculo, updateVehiculo } = useContext(VehiculoContext);
+    const { addVehiculo, updateVehiculo, vehiculos } = useContext(VehiculoContext);
 
     const [marca, setMarca] = useState("");
     const [modelo, setModelo] = useState("");
@@ -16,7 +16,7 @@ export const ModalFormVehiculo = ({ isOpen, onClose, mode, vehiculoData }) => {
    const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validaciones
+   // 1. Validaciones de campos obligatorios
     if (!marca.trim()) {
         alert("La marca es obligatoria");
         return;
@@ -25,9 +25,29 @@ export const ModalFormVehiculo = ({ isOpen, onClose, mode, vehiculoData }) => {
         alert("El modelo es obligatorio");
         return;
     }
+    
+    // Normalizamos la placa inmediatamente para validar el formato y la unicidad
     const placaRegex = /^[A-Z]{3}[0-9]{4}$/i;
-    if (!placaRegex.test(placa.trim())) {
+    const placaNormalizada = placa.trim().toUpperCase();
+
+    // 2. Validación de formato de placa
+    if (!placaRegex.test(placaNormalizada)) {
         alert("Placa inválida. Debe tener 3 letras y 4 números, ejemplo: ABC1234");
+        return;
+    }
+
+    // 3. Validación de unicidad de placa (Necesita acceso a la lista 'vehiculos')
+    // Se asume que 'vehiculos' está disponible en el scope del componente (e.g., por useContext).
+    const placaExistente = vehiculos.find(v => 
+        // 1. La placa debe coincidir
+        v.placa === placaNormalizada && 
+        
+        // 2. Si estamos en modo 'edit', ignoramos la placa del vehículo actual
+        !(mode === "edit" && vehiculoData && v.id === vehiculoData.id)
+    );
+
+    if (placaExistente) {
+        alert(`La placa ${placaNormalizada} ya se encuentra registrada. No es permitido guardar duplicados.`);
         return;
     }
 
@@ -41,6 +61,12 @@ export const ModalFormVehiculo = ({ isOpen, onClose, mode, vehiculoData }) => {
 
         if (mode === "add") {
             await addVehiculo(datosVehiculo);
+
+            setMarca("");
+            setModelo("");
+            setPlaca("");
+            setStatus(true);
+
         } else if (mode === "edit" && vehiculoData) {
             
             const isConfirmed = window.confirm("¿Estás seguro de que deseas guardar estos cambios en el vehículo?");
@@ -60,12 +86,13 @@ export const ModalFormVehiculo = ({ isOpen, onClose, mode, vehiculoData }) => {
     }
 };
     useEffect(() => {
-        if (mode === "edit" && vehiculoData) {
+       if (mode === "edit" && vehiculoData) {
             setMarca(vehiculoData.marca || "");
             setModelo(vehiculoData.modelo || "");
             setPlaca(vehiculoData.placa || "");
             setStatus(vehiculoData.status ?? true);
         } else {
+            // Se ejecuta cada vez que el modal se abre en modo 'add'
             setMarca("");
             setModelo("");
             setPlaca("");
