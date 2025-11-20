@@ -86,7 +86,7 @@ export const TableListVehiculos = ({ handleOpen }) => {
             </div>
 
             {/* 3. DISEÑO DE TABLA: Se restauran las clases de estilo. */}
-            <div className="overflow-x-auto rounded-box border ml-25 mr-25 border-base-content/5 bg-base-150">
+            <div className="overflow-x-auto rounded-box border bg-base-150 p-4">
                 <table className="table w-full flex ml-10">
                     <thead>
                         <tr>

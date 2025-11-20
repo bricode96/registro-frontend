@@ -23,9 +23,15 @@ export const RegistroPage = () => {
         setRegistroData(null);
     };
 
-    const handleEdit = (registro) => {
-        handleOpen("edit", registro);
-    };
+  const handleEdit = (registro) => {
+    // Verifica si el estado es "Completado"
+    if (registro.estado === "Completado") {
+        alert(`El registro con ID ${registro.idSalida} no se puede editar porque está completado.`);
+        return;
+    }
+
+    handleOpen("edit", registro); // abrir modal solo si está pendiente
+};
 
     const handleDelete = async (id) => {
         if (window.confirm("¿Deseas eliminar este registro?")) {
