@@ -1,41 +1,40 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { NavBar } from "../component/NavBar";
 import { TableListRegistros } from "../component/TableListRegistros";
-import { ModalFormRegistro } from "../component/ModalFormRegistro"; // si lo tienes, si no lo comentas
+import { ModalFormRegistro } from "../component/ModalFormRegistro";
+import { RegistroContext } from "../context/RegistroContext";
 
 export const RegistroPage = () => {
+    const { deleteSalida } = useContext(RegistroContext);
+
     const [searchTerm, setSearchTerm] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [modalMode, setModalMode] = useState("add");
     const [registroData, setRegistroData] = useState(null);
 
-    // Abrir modal
     const handleOpen = (mode, registro = null) => {
         setModalMode(mode);
         setRegistroData(registro);
         setIsOpen(true);
     };
 
-    // Cerrar modal
     const handleClose = () => {
         setIsOpen(false);
         setRegistroData(null);
     };
 
-    // Función para editar
     const handleEdit = (registro) => {
         handleOpen("edit", registro);
     };
 
-    // Función para eliminar
-    const handleDelete = (id) => {
-        console.log("Eliminar registro ID:", id);
-        // Aquí puedes llamar a tu API o cambiar estado a falso
-    };
-
-    const handleSubmit = async (data) => {
-        console.log(modalMode === "add" ? "Agregar registro:" : "Editar registro:", data);
-        handleClose();
+    const handleDelete = async (id) => {
+        if (window.confirm("¿Deseas eliminar este registro?")) {
+            try {
+                await deleteSalida(id);
+            } catch (err) {
+                console.error("Error al eliminar registro:", err);
+            }
+        }
     };
 
     return (
@@ -59,7 +58,6 @@ export const RegistroPage = () => {
                 isOpen={isOpen}
                 onClose={handleClose}
                 mode={modalMode}
-                OnSubmit={handleSubmit}
                 registroData={registroData}
             />
         </>

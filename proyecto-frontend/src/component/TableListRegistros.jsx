@@ -54,9 +54,11 @@ export const TableListRegistros = ({ searchTerm, setSearchTerm, handleOpen, hand
                     placeholder="Buscar por motorista o modelo..."
                     className="input input-bordered w-1/3"
                     value={searchTerm}
-                    onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setCurrentPage(1); // Reinicia la página al buscar
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            e.preventDefault(); // Evita que la página se recargue
+                        }
                     }}
                 />
             </div>
@@ -71,7 +73,7 @@ export const TableListRegistros = ({ searchTerm, setSearchTerm, handleOpen, hand
                             <th>Salida</th>
                             <th>Entrada</th>
                             <th>Estado</th>
-                            <th>Acciones</th> 
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>

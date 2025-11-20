@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { RegistroContext } from "./RegistroContext";
 import axios from "axios";
 
-const API_URL = "https://registrovehiculo.onrender.com/api";
+
 
 export const RegistroProvider = ({ children }) => {
     const [registros, setRegistros] = useState([]);
@@ -15,8 +15,8 @@ export const RegistroProvider = ({ children }) => {
             setLoading(true);
 
             const [salidasRes, entradasRes] = await Promise.all([
-                axios.get(`${API_URL}/registroSalida`),
-                axios.get(`${API_URL}/registroEntrada`)
+                axios.get("https://registrovehiculo.onrender.com/api/registroSalida"),
+                axios.get("https://registrovehiculo.onrender.com/api/registroEntrada")
             ]);
 
             const salidas = salidasRes.data;
@@ -64,7 +64,7 @@ export const RegistroProvider = ({ children }) => {
     // -------------------------
     const addSalida = useCallback(async (nuevo) => {
         try {
-            await axios.post(`${API_URL}/salidas`, nuevo);
+            await axios.post("https://registrovehiculo.onrender.com/api/registroSalida", nuevo);
             fetchRegistros();
         } catch (err) {
             console.error("Error al agregar salida:", err);
@@ -74,7 +74,7 @@ export const RegistroProvider = ({ children }) => {
 
     const updateSalida = useCallback(async (id, datosActualizados) => {
         try {
-            await axios.put(`${API_URL}/salidas/${id}`, datosActualizados);
+            await axios.put(`https://registrovehiculo.onrender.com/api/registroSalida/${id}`, datosActualizados);
             fetchRegistros();
         } catch (err) {
             console.error("Error al actualizar salida:", err);
@@ -84,7 +84,7 @@ export const RegistroProvider = ({ children }) => {
 
     const deleteSalida = useCallback(async (id) => {
         try {
-            await axios.delete(`${API_URL}/salidas/${id}`);
+            await axios.delete(`https://registrovehiculo.onrender.com/api/registroSalida/${id}`);
             fetchRegistros();
         } catch (err) {
             console.error("Error al eliminar salida:", err);
@@ -97,7 +97,7 @@ export const RegistroProvider = ({ children }) => {
     // -------------------------
     const addEntrada = useCallback(async (nuevo) => {
         try {
-            await axios.post(`${API_URL}/entradas`, nuevo);
+            await axios.post(`https://registrovehiculo.onrender.com/api/registroEntrada`, nuevo);
             fetchRegistros();
         } catch (err) {
             console.error("Error al agregar entrada:", err);
@@ -107,7 +107,7 @@ export const RegistroProvider = ({ children }) => {
 
     const updateEntrada = useCallback(async (id, datosActualizados) => {
         try {
-            await axios.put(`${API_URL}/entradas/${id}`, datosActualizados);
+            await axios.put(`https://registrovehiculo.onrender.com/api/registroEntrada/${id}`, datosActualizados);
             fetchRegistros();
         } catch (err) {
             console.error("Error al actualizar entrada:", err);
@@ -117,7 +117,7 @@ export const RegistroProvider = ({ children }) => {
 
     const deleteEntrada = useCallback(async (id) => {
         try {
-            await axios.delete(`${API_URL}/entradas/${id}`);
+            await axios.delete(`https://registrovehiculo.onrender.com/api/registroEntrada/${id}`);
             fetchRegistros();
         } catch (err) {
             console.error("Error al eliminar entrada:", err);

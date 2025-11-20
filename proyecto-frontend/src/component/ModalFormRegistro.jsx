@@ -3,15 +3,14 @@ import { VehiculoContext } from "../context/VehiculoContext";
 import { RegistroContext } from "../context/RegistroContext";
 
 export const ModalFormRegistro = ({ isOpen, onClose, mode, registroData }) => {
-    const { vehiculos } = useContext(VehiculoContext); // Traemos los vehículos
-    const { fetchRegistros } = useContext(RegistroContext);
+    const { vehiculos } = useContext(VehiculoContext);
+    const { addSalida, updateSalida, addEntrada, updateEntrada  } = useContext(RegistroContext);
 
     const [vehiculoId, setVehiculoId] = useState("");
     const [nombreMotorista, setNombreMotorista] = useState("");
     const [fechaSalida, setFechaSalida] = useState("");
     const [horaSalida, setHoraSalida] = useState("");
     const [kilometrajeSalida, setKilometrajeSalida] = useState("");
-
     const [fechaEntrada, setFechaEntrada] = useState("");
     const [horaEntrada, setHoraEntrada] = useState("");
     const [kilometrajeEntrada, setKilometrajeEntrada] = useState("");
@@ -41,7 +40,6 @@ export const ModalFormRegistro = ({ isOpen, onClose, mode, registroData }) => {
             setFechaSalida(formatDateForInput(registroData.fecha_salida));
             setHoraSalida(formatTimeForInput(registroData.hora_salida));
             setKilometrajeSalida(registroData.kilometraje_salida || "");
-
             setFechaEntrada(formatDateForInput(registroData.fecha_entrada));
             setHoraEntrada(formatTimeForInput(registroData.hora_entrada));
             setKilometrajeEntrada(registroData.kilometraje_entrada || "");
@@ -51,33 +49,52 @@ export const ModalFormRegistro = ({ isOpen, onClose, mode, registroData }) => {
             setFechaSalida("");
             setHoraSalida("");
             setKilometrajeSalida("");
-
             setFechaEntrada("");
             setHoraEntrada("");
             setKilometrajeEntrada("");
         }
     }, [mode, registroData]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!vehiculoId) return alert("Selecciona un vehículo");
-        if (!nombreMotorista.trim()) return alert("Nombre del motorista es obligatorio");
 
-        const datosRegistro = {
-            id_vehiculo_fk: vehiculoId,
-            nombre_motorista: nombreMotorista,
-            fecha_salida: fechaSalida,
-            hora_salida: horaSalida,
-            kilometraje_salida: kilometrajeSalida,
-            fecha_entrada: fechaEntrada || null,
-            hora_entrada: horaEntrada || null,
-            kilometraje_entrada: kilometrajeEntrada || null,
-        };
+const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        console.log(mode === "add" ? "Agregar" : "Editar", datosRegistro);
-        await fetchRegistros();
-        onClose();
+    const datosSalida = {
+        id_vehiculo_fk: vehiculoId,
+        nombre_motorista: nombreMotorista,
+        fecha_salida: fechaSalida,
+        hora_salida: horaSalida,
+        kilometraje_salida: kilometrajeSalida,
+        estado: (fechaEntrada || horaEntrada) ? true : false, // Booleano según entrada
     };
+
+    const datosEntrada = {
+        fecha_entrada: fechaEntrada || null,
+        hora_entrada: horaEntrada || null,
+        kilometraje_entrada: kilometrajeEntrada || null,
+    };
+
+    try {
+        if (mode === "add") {
+            await addSalida(datosSalida);
+        } else if (mode === "edit") {
+            await updateSalida(registroData.idSalida, datosSalida);
+
+            if (fechaEntrada || horaEntrada || kilometrajeEntrada) {
+                if (registroData.fecha_entrada) {
+                    await updateEntrada(registroData.idSalida, datosEntrada);
+                } else {
+                    await addEntrada({ id_salida_fk: registroData.idSalida, ...datosEntrada });
+                }
+            }
+        }
+
+        onClose();
+    } catch (err) {
+        console.error("Error al guardar registro:", err);
+    }
+};
+
 
     return (
         <dialog className="modal" open={isOpen}>
@@ -109,7 +126,7 @@ export const ModalFormRegistro = ({ isOpen, onClose, mode, registroData }) => {
                     </label>
 
                     <label className="input input-bordered flex items-center gap-2">
-                        Nombre del motorista
+                        Motorista
                         <input
                             type="text"
                             className="grow"
@@ -151,7 +168,6 @@ export const ModalFormRegistro = ({ isOpen, onClose, mode, registroData }) => {
                         />
                     </label>
 
-                    {/* Entrada solo si es edición */}
                     {mode === "edit" && (
                         <>
                             <hr className="my-2" />
