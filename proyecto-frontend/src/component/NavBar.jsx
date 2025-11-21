@@ -1,8 +1,17 @@
+/**
+ * Componente `NavBar` que representa la barra de navegación principal de la aplicación.
+ * Incluye un título, menú desplegable para dispositivos móviles y botones de navegación para
+ * pantallas grandes.
+ *
+ * @returns {JSX.Element} Renderiza la barra de navegación con enlaces a "Vehiculo" y "Registro".
+ */
+
 import { Link } from "react-router-dom";
 
 export const NavBar = () => {
     return (
         <div className="navbar bg-base-100 shadow-sm px-2 sm:px-4">
+            {/* Inicio de la barra: menú desplegable en dispositivos móviles */}
             <div className="navbar-start">
                 <div className="dropdown">
                     <label tabIndex={0} className="btn btn-ghost lg:hidden">
@@ -11,14 +20,17 @@ export const NavBar = () => {
                         </svg>
                     </label>
                     <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+                        {/* Enlaces para navegación en móvil */}
                         <li><Link to="/vehiculos">Vehiculo</Link></li>
                         <li><Link to="/registro">Registro</Link></li>
                     </ul>
                 </div>
 
+                {/* Título de la aplicación */}
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold ml-2">Control de flota</h1>
             </div>
 
+            {/* Menú de navegación para pantallas grandes */}
             <div className="navbar-end hidden lg:flex">
                 <ul className="menu menu-horizontal px-1">
                     <li className='flex justify-center mt-2 lg:mt-0'>
@@ -34,6 +46,5 @@ export const NavBar = () => {
                 </ul>
             </div>
         </div>
-
     )
 }

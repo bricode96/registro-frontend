@@ -1,10 +1,29 @@
+/**
+ * Componente `ModalFormRegistro` que representa un modal para agregar o editar registros de salida/entrada de vehículos.
+ * 
+ * @param {Object} props - Propiedades del componente.
+ * @param {boolean} props.isOpen - Indica si el modal está abierto.
+ * @param {function} props.onClose - Función que se llama para cerrar el modal.
+ * @param {"add"|"edit"} props.mode - Define el modo del modal: "add" para agregar, "edit" para editar.
+ * @param {Object} [props.registroData] - Datos del registro a editar (requerido si mode es "edit").
+ * 
+ * @returns {JSX.Element} Renderiza un modal con formulario de registro de salida y entrada de vehículos.
+ * 
+ * @description
+ * - Gestiona los estados internos del formulario: vehículo, motorista, fechas, horas y kilometraje de salida y entrada.
+ * - Convierte las fechas y horas a formatos compatibles con inputs de tipo `date` y `time`.
+ * - En modo "add", llama a `addSalida` para crear un nuevo registro.
+ * - En modo "edit", llama a `updateSalida` para actualizar la salida y a `addEntrada` o `updateEntrada` según corresponda.
+ * - Permite seleccionar un vehículo de la lista obtenida desde el contexto `VehiculoContext`.
+ * - Al abrir el modal en modo "edit", se rellenan los campos con los datos del registro.
+ */
 import { useEffect, useState, useContext } from "react";
 import { VehiculoContext } from "../context/VehiculoContext";
 import { RegistroContext } from "../context/RegistroContext";
 
 export const ModalFormRegistro = ({ isOpen, onClose, mode, registroData }) => {
     const { vehiculos } = useContext(VehiculoContext);
-    const { addSalida, updateSalida, addEntrada, updateEntrada  } = useContext(RegistroContext);
+    const { addSalida, updateSalida, addEntrada, updateEntrada } = useContext(RegistroContext);
 
     const [vehiculoId, setVehiculoId] = useState("");
     const [nombreMotorista, setNombreMotorista] = useState("");
@@ -55,46 +74,44 @@ export const ModalFormRegistro = ({ isOpen, onClose, mode, registroData }) => {
         }
     }, [mode, registroData]);
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-const handleSubmit = async (e) => {
-    e.preventDefault();
+        const datosSalida = {
+            id_vehiculo_fk: vehiculoId,
+            nombre_motorista: nombreMotorista,
+            fecha_salida: fechaSalida,
+            hora_salida: horaSalida,
+            kilometraje_salida: kilometrajeSalida,
+            estado: (fechaEntrada || horaEntrada) ? true : false,
+        };
 
-    const datosSalida = {
-        id_vehiculo_fk: vehiculoId,
-        nombre_motorista: nombreMotorista,
-        fecha_salida: fechaSalida,
-        hora_salida: horaSalida,
-        kilometraje_salida: kilometrajeSalida,
-        estado: (fechaEntrada || horaEntrada) ? true : false, // Booleano según entrada
-    };
+        const datosEntrada = {
+            fecha_entrada: fechaEntrada || null,
+            hora_entrada: horaEntrada || null,
+            kilometraje_entrada: kilometrajeEntrada || null,
+        };
 
-    const datosEntrada = {
-        fecha_entrada: fechaEntrada || null,
-        hora_entrada: horaEntrada || null,
-        kilometraje_entrada: kilometrajeEntrada || null,
-    };
+        try {
+            if (mode === "add") {
+                await addSalida(datosSalida);
+            } else if (mode === "edit") {
+                await updateSalida(registroData.idSalida, datosSalida);
 
-    try {
-        if (mode === "add") {
-            await addSalida(datosSalida);
-        } else if (mode === "edit") {
-            await updateSalida(registroData.idSalida, datosSalida);
-
-            if (fechaEntrada || horaEntrada || kilometrajeEntrada) {
-                if (registroData.fecha_entrada) {
-                    await updateEntrada(registroData.idSalida, datosEntrada);
-                } else {
-                    await addEntrada({ id_salida_fk: registroData.idSalida, ...datosEntrada });
+                if (fechaEntrada || horaEntrada || kilometrajeEntrada) {
+                    if (registroData.fecha_entrada) {
+                        await updateEntrada(registroData.idSalida, datosEntrada);
+                    } else {
+                        await addEntrada({ id_salida_fk: registroData.idSalida, ...datosEntrada });
+                    }
                 }
             }
+
+            onClose();
+        } catch (err) {
+            console.error("Error al guardar registro:", err);
         }
-
-        onClose();
-    } catch (err) {
-        console.error("Error al guardar registro:", err);
-    }
-};
-
+    };
 
     return (
         <dialog className="modal" open={isOpen}>
